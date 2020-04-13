@@ -10,13 +10,12 @@ import (
 	"time"
 
 	bw "github.com/h44z/bitwarden-go/internal/common"
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3" // Driver import
 	uuid "github.com/satori/go.uuid"
 )
 
 type DB struct {
-	db  *sql.DB
-	dir string
+	db *sql.DB
 }
 
 const acctTbl = `
@@ -57,23 +56,19 @@ PRIMARY KEY(id)
 )
 `
 
-func (db *DB) Init() error {
-	for _, sql := range []string{acctTbl, ciphersTbl, foldersTbl} {
-		if _, err := db.db.Exec(sql); err != nil {
-			return errors.New(fmt.Sprintf("SQL error with %s\n%s", sql, err.Error()))
+func (db *DB) Initialize(cfg *bw.Configuration) error {
+	for _, query := range []string{acctTbl, ciphersTbl, foldersTbl} {
+		if _, err := db.db.Exec(query); err != nil {
+			return errors.New(fmt.Sprintf("SQL error with %s\n%s", query, err.Error()))
 		}
 	}
 	return nil
 }
 
-func (db *DB) SetDir(d string) {
-	db.dir = d
-}
-
-func (db *DB) Open() error {
+func (db *DB) Open(cfg *bw.Configuration) error {
 	var err error
-	if db.dir != "" {
-		db.db, err = sql.Open("sqlite3", path.Join(db.dir, "db"))
+	if cfg.Database.Location != "" {
+		db.db, err = sql.Open("sqlite3", path.Join(cfg.Database.Location, "db"))
 	} else {
 		db.db, err = sql.Open("sqlite3", "db")
 	}

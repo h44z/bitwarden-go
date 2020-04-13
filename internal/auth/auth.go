@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/h44z/bitwarden-go/internal/database"
+
 	"golang.org/x/crypto/pbkdf2"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -21,12 +23,12 @@ import (
 )
 
 type Auth struct {
-	db         database
+	db         database.Implementation
 	signingKey []byte
 	jwtExpire  int
 }
 
-func New(db database, signingKey string, jwtExpire int) Auth {
+func New(db database.Implementation, signingKey string, jwtExpire int) Auth {
 	auth := Auth{
 		db:         db,
 		signingKey: []byte(signingKey),
@@ -34,14 +36,6 @@ func New(db database, signingKey string, jwtExpire int) Auth {
 	}
 
 	return auth
-}
-
-// Interface to make testing easier
-type database interface {
-	AddAccount(acc bw.Account) error
-	GetAccount(username string, refreshtoken string) (bw.Account, error)
-	UpdateAccountInfo(acc bw.Account) error
-	Update2FAsecret(secret string, email string) error
 }
 
 func reHashPassword(key, salt string, itr int) (string, error) {
@@ -334,7 +328,7 @@ func (auth *Auth) JwtMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func checkPassword(db database, username, passwordHash string) (bw.Account, error) {
+func checkPassword(db database.Implementation, username, passwordHash string) (bw.Account, error) {
 	acc, err := db.GetAccount(username, "")
 	if err != nil {
 		return bw.Account{}, err

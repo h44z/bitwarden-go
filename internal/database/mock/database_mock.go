@@ -6,7 +6,7 @@ import (
 )
 
 // mock database used for testing
-type MockDB struct {
+type DB struct {
 	Username        string
 	Password        string
 	RefreshToken    string
@@ -14,61 +14,62 @@ type MockDB struct {
 	KdfIterations   int
 }
 
-func (db *MockDB) Init() error {
+func (db *DB) UpdateFolder(newFolder bw.Folder, owner string) error {
 	return nil
 }
 
-func (db *MockDB) SetDir(d string) {
-}
-
-func (db *MockDB) Open() error {
+func (db *DB) Initialize(cfg *bw.Configuration) error {
 	return nil
 }
 
-func (db *MockDB) Close() {
-}
-
-func (db *MockDB) UpdateAccountInfo(acc bw.Account) error {
+func (db *DB) Open(cfg *bw.Configuration) error {
 	return nil
 }
 
-func (db *MockDB) GetCipher(owner string, ciphID string) (bw.Cipher, error) {
+func (db *DB) Close() {
+}
+
+func (db *DB) UpdateAccountInfo(acc bw.Account) error {
+	return nil
+}
+
+func (db *DB) GetCipher(owner string, ciphID string) (bw.Cipher, error) {
 	return bw.Cipher{}, nil
 }
 
-func (db *MockDB) GetCiphers(owner string) ([]bw.Cipher, error) {
+func (db *DB) GetCiphers(owner string) ([]bw.Cipher, error) {
 	return nil, nil
 }
 
-func (db *MockDB) NewCipher(ciph bw.Cipher, owner string) (bw.Cipher, error) {
+func (db *DB) NewCipher(ciph bw.Cipher, owner string) (bw.Cipher, error) {
 	return bw.Cipher{}, nil
 
 }
 
-func (db *MockDB) UpdateCipher(newData bw.Cipher, owner string, ciphID string) error {
+func (db *DB) UpdateCipher(newData bw.Cipher, owner string, ciphID string) error {
 	return nil
 }
 
-func (db *MockDB) DeleteCipher(owner string, ciphID string) error {
+func (db *DB) DeleteCipher(owner string, ciphID string) error {
 	return nil
 }
 
-func (db *MockDB) AddAccount(acc bw.Account) error {
+func (db *DB) AddAccount(acc bw.Account) error {
 	return nil
 }
 
-func (db *MockDB) GetAccount(username string, refreshtoken string) (bw.Account, error) {
+func (db *DB) GetAccount(username string, refreshtoken string) (bw.Account, error) {
 	return bw.Account{Email: db.Username, MasterPasswordHash: db.Password, RefreshToken: db.RefreshToken, TwoFactorSecret: db.TwoFactorSecret, KdfIterations: db.KdfIterations}, nil
 }
 
-func (db *MockDB) AddFolder(name string, owner string) (bw.Folder, error) {
+func (db *DB) AddFolder(name string, owner string) (bw.Folder, error) {
 	return bw.Folder{}, nil
 }
 
-func (db *MockDB) GetFolders(owner string) ([]bw.Folder, error) {
+func (db *DB) GetFolders(owner string) ([]bw.Folder, error) {
 	return nil, nil
 }
 
-func (db *MockDB) Update2FAsecret(secret string, email string) error {
+func (db *DB) Update2FAsecret(secret string, email string) error {
 	return nil
 }

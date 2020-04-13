@@ -2,63 +2,72 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/http"
+	"os"
+	"strconv"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/h44z/bitwarden-go/internal/database/mock"
+
+	"github.com/h44z/bitwarden-go/internal/database"
+	"github.com/h44z/bitwarden-go/internal/database/sqlite"
 
 	"github.com/h44z/bitwarden-go/internal/api"
 	"github.com/h44z/bitwarden-go/internal/auth"
 	"github.com/h44z/bitwarden-go/internal/common"
-	"github.com/h44z/bitwarden-go/internal/database/sqlite"
 )
 
-var cfg struct {
-	initDB              bool
-	location            string
-	signingKey          string
-	jwtExpire           int
-	hostAddr            string
-	hostPort            string
-	disableRegistration bool
-	vaultURL            string
-}
-
-func init() {
-	flag.BoolVar(&cfg.initDB, "init", false, "Initalizes the database.")
-	flag.StringVar(&cfg.location, "location", "", "Sets the directory for the database")
-	flag.StringVar(&cfg.signingKey, "key", "secret", "Sets the signing key")
-	flag.IntVar(&cfg.jwtExpire, "tokenTime", 3600, "Sets the ammount of time (in seconds) the generated JSON Web Tokens will last before expiry.")
-	flag.StringVar(&cfg.hostAddr, "host", "", "Sets the interface that the application will listen on.")
-	flag.StringVar(&cfg.hostPort, "port", "8000", "Sets the port")
-	flag.StringVar(&cfg.vaultURL, "vaultURL", "", "Sets the vault proxy url")
-	flag.BoolVar(&cfg.disableRegistration, "disableRegistration", false, "Disables user registration.")
-}
-
 func main() {
-	db := &sqlite.DB{}
+	common.SetupLogging()
+
+	// Parse input flags
+	configFile := flag.String("config", "", "Configuration file.")
+	cmdInitDB := flag.Bool("init", false, "Initializes the database.")
 	flag.Parse()
 
-	db.SetDir(cfg.location)
-	err := db.Open()
+	cfg, err := common.LoadConfiguration(*configFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Select database implementation
+	var db database.Implementation
+	switch cfg.Database.Type {
+	case common.DatabaseTypeMocked:
+		db = &mock.DB{}
+	case common.DatabaseTypeSQLite:
+		db = &sqlite.DB{}
+	case common.DatabaseTypeMySQL:
+		log.Error("unimplemented")
+		os.Exit(101)
+	default:
+		log.Errorf("No such database backend %s", cfg.Database.Type)
+		os.Exit(102)
+	}
+
+	// Open database connection
+	err = db.Open(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer db.Close()
 
-	// Create a new database
-	if cfg.initDB {
-		err := db.Init()
+	// Re-create database structure
+	if *cmdInitDB {
+		err := db.Initialize(cfg)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	authHandler := auth.New(db, cfg.signingKey, cfg.jwtExpire)
+	// Setup HTTP handlers
+	authHandler := auth.New(db, cfg.Security.SigningKey, cfg.Security.JWTExpire)
 	apiHandler := api.New(db)
 
 	mux := http.NewServeMux()
 
-	if cfg.disableRegistration == false {
+	if cfg.Core.DisableRegistration == false {
 		mux.HandleFunc("/api/accounts/register", authHandler.HandleRegister)
 	}
 	mux.HandleFunc("/identity/connect/token", authHandler.HandleLogin)
@@ -76,8 +85,8 @@ func main() {
 	mux.Handle("/api/ciphers", authHandler.JwtMiddleware(http.HandlerFunc(apiHandler.HandleCipher)))
 	mux.Handle("/api/ciphers/", authHandler.JwtMiddleware(http.HandlerFunc(apiHandler.HandleCipherUpdate)))
 
-	if len(cfg.vaultURL) > 4 {
-		proxy := common.Proxy{VaultURL: cfg.vaultURL}
+	if len(cfg.Core.VaultURL) > 4 {
+		proxy := common.Proxy{VaultURL: cfg.Core.VaultURL}
 		mux.Handle("/", http.HandlerFunc(proxy.Handler))
 	}
 
@@ -86,6 +95,7 @@ func main() {
 	mux.Handle("/api/two-factor/disable", authHandler.JwtMiddleware(http.HandlerFunc(authHandler.HandleDisableTwoFactor)))
 	mux.Handle("/api/two-factor", authHandler.JwtMiddleware(http.HandlerFunc(authHandler.HandleTwoFactor)))
 
-	log.Println("Starting server on " + cfg.hostAddr + ":" + cfg.hostPort)
-	log.Fatal(http.ListenAndServe(cfg.hostAddr+":"+cfg.hostPort, mux))
+	// Startup HTTP server
+	log.Infof("Starting server on %s:%d", cfg.Core.ListenAddress, cfg.Core.Port)
+	log.Fatal(http.ListenAndServe(cfg.Core.ListenAddress+":"+strconv.Itoa(cfg.Core.Port), mux))
 }
