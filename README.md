@@ -5,8 +5,7 @@ project nor 8bit Solutions LLC. Please use gitter or the issue tracker for this 
 
 ## bitwarden-go
 
-[![Build Status](https://travis-ci.org/h44z/bitwarden-go.svg?branch=master)](https://travis-ci.org/h44z/bitwarden-go)
-
+[![Build Status](https://travis-ci.org/h44z/bitwarden-go.svg?branch=dev)](https://travis-ci.org/h44z/bitwarden-go)
 
 A server compatible with the Bitwarden apps and plugins. The server has a small footprint and could be run locally on your computer, a Raspberry Pi or a small VPS. The data is stored in a local SQLite database.
 
@@ -19,12 +18,12 @@ For more information on the protocol you can read the [documentation](https://gi
 Make sure you have the ```go``` package installed.
 *Note: package name may vary based on distribution*
 
-You can then run ```go get github.com/VictorNine/bitwarden-go/cmd/bitwarden-go``` to fetch the latest code.
+You can then run ```go get github.com/h44z/bitwarden-go/cmd/bitwarden-go``` to fetch the latest code.
 
 #### Build/Install
 Run in your favorite terminal:
 ```
-cd $GOPATH/src/github.com/VictorNine/bitwarden-go/cmd/bitwarden-go
+cd $GOPATH/src/github.com/h44z/bitwarden-go/cmd/bitwarden-go
 ```
 followed by
 ```
@@ -47,7 +46,7 @@ bitwarden-go -init
 This will create a database called ```db``` in the directory of the application. Use `-location` to set a different directory for the database.
 
 #### Running
-To run [bitwarden-go](https://github.com/VictorNine/bitwarden-go), run the following in the terminal:
+To run [bitwarden-go](https://github.com/h44z/bitwarden-go), run the following in the terminal:
 ```
 bitwarden-go
 ```
