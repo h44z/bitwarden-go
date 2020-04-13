@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	bw "github.com/VictorNine/bitwarden-go/internal/common"
+	bw "github.com/h44z/bitwarden-go/internal/common"
 )
 
 func TestToCipher(t *testing.T) {
