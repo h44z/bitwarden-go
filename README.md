@@ -5,8 +5,7 @@ project nor 8bit Solutions LLC. Please use gitter or the issue tracker for this 
 
 ## bitwarden-go
 
-[![Build Status](https://travis-ci.org/VictorNine/bitwarden-go.svg?branch=master)](https://travis-ci.org/VictorNine/bitwarden-go)
-[![Gitter chat](https://badges.gitter.im//bitwarden-go/Lobby.png)](https://gitter.im/bitwarden-go/Lobby "Gitter chat")
+[![Build Status](https://travis-ci.org/h44z/bitwarden-go.svg?branch=master)](https://travis-ci.org/h44z/bitwarden-go)
 
 
 A server compatible with the Bitwarden apps and plugins. The server has a small footprint and could be run locally on your computer, a Raspberry Pi or a small VPS. The data is stored in a local SQLite database.
