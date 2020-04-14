@@ -8,10 +8,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/h44z/bitwarden-go/internal/database"
 
@@ -164,7 +165,7 @@ func (auth *Auth) HandleLogin(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(http.StatusText(http.StatusBadRequest)))
-		log.Println("Login without grant_type")
+		log.Warn("Login without grant_type")
 		return
 	}
 

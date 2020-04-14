@@ -1,4 +1,4 @@
-package sqlite
+package database
 
 import (
 	"database/sql"
@@ -14,7 +14,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type DB struct {
+type SQLite struct {
 	db *sql.DB
 }
 
@@ -56,7 +56,7 @@ PRIMARY KEY(id)
 )
 `
 
-func (db *DB) Initialize(cfg *bw.Configuration) error {
+func (db *SQLite) Initialize(cfg *bw.Configuration) error {
 	for _, query := range []string{acctTbl, ciphersTbl, foldersTbl} {
 		if _, err := db.db.Exec(query); err != nil {
 			return errors.New(fmt.Sprintf("SQL error with %s\n%s", query, err.Error()))
@@ -65,7 +65,7 @@ func (db *DB) Initialize(cfg *bw.Configuration) error {
 	return nil
 }
 
-func (db *DB) Open(cfg *bw.Configuration) error {
+func (db *SQLite) Open(cfg *bw.Configuration) error {
 	var err error
 	if cfg.Database.Location != "" {
 		db.db, err = sql.Open("sqlite3", path.Join(cfg.Database.Location, "db"))
@@ -75,8 +75,8 @@ func (db *DB) Open(cfg *bw.Configuration) error {
 	return err
 }
 
-func (db *DB) Close() {
-	db.db.Close()
+func (db *SQLite) Close() {
+	_ = db.db.Close()
 }
 
 func sqlRowToCipher(row interface {
@@ -120,7 +120,7 @@ func sqlRowToCipher(row interface {
 	return ciph, nil
 }
 
-func (db *DB) GetCipher(owner string, ciphID string) (bw.Cipher, error) {
+func (db *SQLite) GetCipher(owner string, ciphID string) (bw.Cipher, error) {
 	iowner, err := strconv.ParseInt(owner, 10, 64)
 	if err != nil {
 		return bw.Cipher{}, err
@@ -136,7 +136,7 @@ func (db *DB) GetCipher(owner string, ciphID string) (bw.Cipher, error) {
 	return sqlRowToCipher(row)
 }
 
-func (db *DB) GetCiphers(owner string) ([]bw.Cipher, error) {
+func (db *SQLite) GetCiphers(owner string) ([]bw.Cipher, error) {
 	iowner, err := strconv.ParseInt(owner, 10, 64)
 	if err != nil {
 		return nil, err
@@ -161,7 +161,7 @@ func (db *DB) GetCiphers(owner string) ([]bw.Cipher, error) {
 	return ciphers, err
 }
 
-func (db *DB) NewCipher(ciph bw.Cipher, owner string) (bw.Cipher, error) {
+func (db *SQLite) NewCipher(ciph bw.Cipher, owner string) (bw.Cipher, error) {
 	iowner, err := strconv.ParseInt(owner, 10, 64)
 	if err != nil {
 		return bw.Cipher{}, err
@@ -194,7 +194,7 @@ func (db *DB) NewCipher(ciph bw.Cipher, owner string) (bw.Cipher, error) {
 }
 
 // Important to check that the owner is correct before an update!
-func (db *DB) UpdateCipher(newData bw.Cipher, owner string, ciphID string) error {
+func (db *SQLite) UpdateCipher(newData bw.Cipher, owner string, ciphID string) error {
 	iowner, err := strconv.ParseInt(owner, 10, 64)
 	if err != nil {
 		return err
@@ -229,7 +229,7 @@ func (db *DB) UpdateCipher(newData bw.Cipher, owner string, ciphID string) error
 }
 
 // Important to check that the owner is correct before an update!
-func (db *DB) DeleteCipher(owner string, ciphID string) error {
+func (db *SQLite) DeleteCipher(owner string, ciphID string) error {
 	iowner, err := strconv.ParseInt(owner, 10, 64)
 	if err != nil {
 		return err
@@ -252,7 +252,7 @@ func (db *DB) DeleteCipher(owner string, ciphID string) error {
 	return nil
 }
 
-func (db *DB) AddAccount(acc bw.Account) error {
+func (db *SQLite) AddAccount(acc bw.Account) error {
 	stmt, err := db.db.Prepare("INSERT INTO accounts(name, email, masterPasswordHash, masterPasswordHint, key, refreshtoken, privatekey, pubkey, tfasecret, kdf, kdfIterations) values(?,?,?,?,?,?,?,?,?,?,?)")
 	if err != nil {
 		return err
@@ -266,7 +266,7 @@ func (db *DB) AddAccount(acc bw.Account) error {
 	return nil
 }
 
-func (db *DB) UpdateAccountInfo(acc bw.Account) error {
+func (db *SQLite) UpdateAccountInfo(acc bw.Account) error {
 	id, err := strconv.ParseInt(acc.Id, 10, 64)
 	if err != nil {
 		return err
@@ -285,7 +285,7 @@ func (db *DB) UpdateAccountInfo(acc bw.Account) error {
 	return nil
 }
 
-func (db *DB) GetAccount(username string, refreshtoken string) (bw.Account, error) {
+func (db *SQLite) GetAccount(username string, refreshtoken string) (bw.Account, error) {
 	var row *sql.Row
 	acc := bw.Account{}
 	acc.KeyPair = bw.KeyPair{}
@@ -310,7 +310,7 @@ func (db *DB) GetAccount(username string, refreshtoken string) (bw.Account, erro
 	return acc, nil
 }
 
-func (db *DB) AddFolder(name string, owner string) (bw.Folder, error) {
+func (db *SQLite) AddFolder(name string, owner string) (bw.Folder, error) {
 	iowner, err := strconv.ParseInt(owner, 10, 64)
 	if err != nil {
 		return bw.Folder{}, err
@@ -338,7 +338,7 @@ func (db *DB) AddFolder(name string, owner string) (bw.Folder, error) {
 	return folder, nil
 }
 
-func (db *DB) UpdateFolder(newFolder bw.Folder, owner string) error {
+func (db *SQLite) UpdateFolder(newFolder bw.Folder, owner string) error {
 	iowner, err := strconv.ParseInt(owner, 10, 64)
 	if err != nil {
 		return err
@@ -357,7 +357,7 @@ func (db *DB) UpdateFolder(newFolder bw.Folder, owner string) error {
 	return nil
 }
 
-func (db *DB) GetFolders(owner string) ([]bw.Folder, error) {
+func (db *SQLite) GetFolders(owner string) ([]bw.Folder, error) {
 	iowner, err := strconv.ParseInt(owner, 10, 64)
 	if err != nil {
 		return nil, err
@@ -388,7 +388,7 @@ func (db *DB) GetFolders(owner string) ([]bw.Folder, error) {
 	return folders, err
 }
 
-func (db *DB) Update2FAsecret(secret string, email string) error {
+func (db *SQLite) Update2FAsecret(secret string, email string) error {
 	stmt, err := db.db.Prepare("UPDATE accounts SET tfasecret=$1 WHERE email=$2")
 	if err != nil {
 		return err

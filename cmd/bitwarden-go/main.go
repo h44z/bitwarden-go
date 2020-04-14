@@ -8,14 +8,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/h44z/bitwarden-go/internal/database/mock"
-
-	"github.com/h44z/bitwarden-go/internal/database"
-	"github.com/h44z/bitwarden-go/internal/database/sqlite"
-
 	"github.com/h44z/bitwarden-go/internal/api"
 	"github.com/h44z/bitwarden-go/internal/auth"
 	"github.com/h44z/bitwarden-go/internal/common"
+	"github.com/h44z/bitwarden-go/internal/database"
 	"github.com/rs/cors"
 )
 
@@ -36,9 +32,9 @@ func main() {
 	var db database.Implementation
 	switch cfg.Database.Type {
 	case common.DatabaseTypeMocked:
-		db = &mock.DB{}
+		db = &database.Mock{}
 	case common.DatabaseTypeSQLite:
-		db = &sqlite.DB{}
+		db = &database.SQLite{}
 	case common.DatabaseTypeMySQL:
 		log.Error("unimplemented")
 		os.Exit(101)
