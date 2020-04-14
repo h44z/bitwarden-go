@@ -1,8 +1,6 @@
 package database
 
 import (
-	"path"
-
 	bw "github.com/h44z/bitwarden-go/internal/common"
 	"github.com/jinzhu/gorm"
 
@@ -41,7 +39,7 @@ func (db *Wrapper) Open() error {
 	case bw.DatabaseTypeMySQL:
 	case bw.DatabaseTypeSQLite:
 		if db.Configuration.Database.Location != "" {
-			db.DB, err = gorm.Open("sqlite3", path.Join(db.Configuration.Database.Location, "db"))
+			db.DB, err = gorm.Open("sqlite3", db.Configuration.Database.Location)
 		} else {
 			db.DB, err = gorm.Open("sqlite3", "db")
 		}

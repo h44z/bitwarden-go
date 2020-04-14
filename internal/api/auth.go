@@ -37,8 +37,8 @@ func (a *API) AuthToken(w http.ResponseWriter, req *http.Request) {
 	var grant database.Grant
 	if grantType == "refresh_token" {
 		refreshToken := req.PostForm["refresh_token"][0]
-		ok := a.db.DB.First(&grant, refreshToken).RecordNotFound()
-		if !ok {
+		fail := a.db.DB.Where("Key = ?", refreshToken).First(&grant).RecordNotFound()
+		if fail {
 			log.Error("Login failed, invalid refresh token")
 			time.Sleep(2 * time.Second) // delay response to avoid denial of service attacks
 			http.Error(w, "invalid refresh_token", http.StatusUnauthorized)
@@ -46,8 +46,8 @@ func (a *API) AuthToken(w http.ResponseWriter, req *http.Request) {
 		}
 
 		userID, _ := strconv.Atoi(grant.SubjectId)
-		ok = a.db.DB.Where("Id = ?", userID).First(&user).RecordNotFound()
-		if !ok {
+		fail = a.db.DB.Where("Id = ?", userID).First(&user).RecordNotFound()
+		if fail {
 			log.Errorf("Login failed, refresh token not linked to any user %s, %s", grant.Key, grant.SubjectId)
 			http.Error(w, "invalid refresh_token", http.StatusUnauthorized)
 			return
