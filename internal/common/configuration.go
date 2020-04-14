@@ -35,6 +35,15 @@ type Configuration struct {
 		SigningKey string `yaml:"signing_key" envconfig:"SECURITY_SIGNING_KEY"`
 		JWTExpire  int    `yaml:"jwt_expire" envconfig:"SECURITY_JWT_EXPIRE"`
 	} `yaml:"security"`
+	Email struct {
+		Host        string `yaml:"host" envconfig:"EMAIL_HOST"`
+		Port        int    `yaml:"port" envconfig:"EMAIL_PORT"`
+		TLS         bool   `yaml:"tls" envconfig:"EMAIL_TLS"`
+		Username    string `yaml:"user" envconfig:"EMAIL_USERNAME"`
+		Password    string `yaml:"pass" envconfig:"EMAIL_PASSWORD"`
+		FromAddress string `yaml:"from" envconfig:"EMAIL_FROM"`
+		FromName    string `yaml:"name" envconfig:"EMAIL_NAME"`
+	} `yaml:"email"`
 }
 
 func setDefaultValues(cfg *Configuration) {
@@ -51,7 +60,7 @@ func setDefaultValues(cfg *Configuration) {
 }
 
 func readConfigFile(cfg *Configuration, filename string) error {
-	f, err := os.Open("config.yml")
+	f, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
