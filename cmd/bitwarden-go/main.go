@@ -16,6 +16,7 @@ import (
 	"github.com/h44z/bitwarden-go/internal/api"
 	"github.com/h44z/bitwarden-go/internal/auth"
 	"github.com/h44z/bitwarden-go/internal/common"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -95,7 +96,10 @@ func main() {
 	mux.Handle("/api/two-factor/disable", authHandler.JwtMiddleware(http.HandlerFunc(authHandler.HandleDisableTwoFactor)))
 	mux.Handle("/api/two-factor", authHandler.JwtMiddleware(http.HandlerFunc(authHandler.HandleTwoFactor)))
 
+	// Enable CORS middleware
+	handler := cors.Default().Handler(mux)
+
 	// Startup HTTP server
 	log.Infof("Starting server on %s:%d", cfg.Core.ListenAddress, cfg.Core.Port)
-	log.Fatal(http.ListenAndServe(cfg.Core.ListenAddress+":"+strconv.Itoa(cfg.Core.Port), mux))
+	log.Fatal(http.ListenAndServe(cfg.Core.ListenAddress+":"+strconv.Itoa(cfg.Core.Port), handler))
 }
